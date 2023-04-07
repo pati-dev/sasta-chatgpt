@@ -61,14 +61,17 @@ def chat():
     openai.api_key = API_KEY
 
     content = request.form['content']
-    if content.lower() == 'exit':
-        return jsonify({'response': "Bot: Goodbye! If you have any more questions or need assistance in the future, feel free to ask. Have a great day!"})
-    conversation.append({
-        'role': 'user',
-        'content': content
-    })
-    response = chatgpt_convo(conversation)[-1]['content']
-    return jsonify({'response': response})
+    if content.lower() == 'reset':
+        global conversation
+        conversation = []
+        return jsonify({'response': "Bot: Conversation reset."})
+    else:
+        conversation.append({
+            'role': 'user',
+            'content': content
+        })
+        response = chatgpt_convo(conversation)[-1]['content']
+        return jsonify({'response': response})
 
 
 def main():

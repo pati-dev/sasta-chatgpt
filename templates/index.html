@@ -1,24 +1,24 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Chat with GPT-4</title>
+      <head>
+        <title>Chat with GPT-4</title>
     <style>
       body {
-        font-family: Arial, sans-serif;
+            font-family: Arial, sans-serif;
         background-color: #333333;
         color: #ffae00;
       }
       h1 {
-        font-size: 2em;
+            font-size: 2em;
         margin-bottom: 0.5em;
       }
       form {
-        display: flex;
+            display: flex;
         flex-direction: row;
         margin-bottom: 1em;
       }
       textarea {
-        flex-grow: 1;
+            flex-grow: 1;
         padding: 0.5em;
         font-size: 1.2em;
         border-radius: 4px;
@@ -30,7 +30,7 @@
         word-wrap: break-word;
         resize: vertical;
       }
-      input[type="submit"] {
+      button {
         margin-left: 0.5em;
         padding: 0.5em;
         font-size: 1.2em;
@@ -42,7 +42,7 @@
         cursor: pointer;
       }
       #chat-log {
-        padding: 1em;
+            padding: 1em;
         background-color: #111111;
         border-radius: 4px;
         min-height: 200px;
@@ -50,43 +50,44 @@
         overflow-y: scroll;
       }
       .bot-message {
-            margin-bottom: 1em;
+                margin-bottom: 1em;
             color: #00ff00;
       }
     </style>
   </head>
   <body>
-    <h1>Chat with GPT-4</h1>
+        <h1>Chat with GPT-4</h1>
     <form id="chat-form">
-      <textarea id="user-input" name="content" placeholder="Type your message here... (Press Ctrl+Enter to submit)"></textarea>
-      <button type="submit">Send</button>
+          <textarea id="user-input" name="content" placeholder="Type your message here... (Press Ctrl+Enter to submit)"></textarea>
+      <button type="submit">Submit</button>
+      <button type="button" id="reset-button">Reset conversation</button>
     </form>
     <div id="chat-log"></div>
     <script>
       const form = document.getElementById('chat-form');
       const userInput = document.getElementById('user-input');
       const chatLog = document.getElementById('chat-log');
-
+      const resetButton = document.getElementById('reset-button');
       userInput.addEventListener('keydown', (event) => {
-        if (event.keyCode === 13 && event.shiftKey) {
-          event.preventDefault();
+            if (event.keyCode === 13 && event.shiftKey) {
+              event.preventDefault();
           userInput.value += '\n';
         } else if (event.key === 'Enter' && event.ctrlKey) {
-          event.preventDefault();
+              event.preventDefault();
           form.dispatchEvent(new Event('submit'));
           } else if (event.keyCode === 13) {
-          event.preventDefault();
+              event.preventDefault();
         }
       });
 
       form.addEventListener('submit', (event) => {
-        event.preventDefault();
+            event.preventDefault();
         const content = userInput.value.trim();
         if (content !== '') {
-          const xhr = new XMLHttpRequest();
+              const xhr = new XMLHttpRequest();
           xhr.onreadystatechange = () => {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-              const response = JSON.parse(xhr.responseText).response;
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                  const response = JSON.parse(xhr.responseText).response;
               chatLog.innerHTML += '<p class="bot-message">Bot:<pre>' + response + '</pre></p>';
               chatLog.scrollTop = chatLog.scrollHeight;
               userInput.value = '';
@@ -99,6 +100,11 @@
           chatLog.scrollTop = chatLog.scrollHeight;
           userInput.value = '';
         }
+      });
+      
+      resetButton.addEventListener('click', () => {
+            chatLog.innerHTML = '';
+        userInput.value = 'reset';
       });
     </script>
   </body>
