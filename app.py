@@ -64,7 +64,7 @@ def chat():
     if content.lower() == 'reset':
         global conversation
         conversation = []
-        return jsonify({'response': "Bot: Conversation reset."})
+        return jsonify({'response': "Conversation reset."})
     else:
         conversation.append({
             'role': 'user',
