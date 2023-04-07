@@ -30,7 +30,4 @@ COPY app.py  .
 COPY templates ./templates
 RUN poetry install --no-root
 
-# add flake8 config for style check at build time
-COPY .flake8 .
-
 CMD [ "python", "app.py" ]
