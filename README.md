@@ -18,4 +18,4 @@ docker run -it --rm \
 ```
 
 ### Sneak-peek of the (quick & dirty) webpage hosted locally:
-<img width="1787" alt="Screenshot 2023-04-07 at 7 10 22 PM" src="https://user-images.githubusercontent.com/29841730/230690705-1c5a59f5-8131-47d3-b3bb-49ea9948c640.png">
+<img width="964" alt="Screenshot 2023-04-07 at 7 10 22 PM" src="https://user-images.githubusercontent.com/29841730/230701016-19109459-046c-4af4-9cf3-7e56e26863eb.png">
