@@ -2,110 +2,139 @@
 <html>
   <head>
     <title>Chat with GPT-4</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #333333;
-      color: #ffae00;
-    }
-    h1 {
-      font-size: 2em;
-      margin-bottom: 0.5em;
-    }
-    form {
-      display: flex;
-      flex-direction: row;
-      margin-bottom: 1em;
-    }
-    textarea {
-      flex-grow: 1;
-      padding: 0.5em;
-      font-size: 1.2em;
-      border-radius: 4px;
-      border: none;
-      box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
-      background-color: #111111;
-      color: #ff8000;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      resize: vertical;
-    }
-    button {
-      margin-left: 0.5em;
-      padding: 0.5em;
-      font-size: 1.2em;
-      border-radius: 4px;
-      border: none;
-      box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
-      background-color: #007bff;
-      color: white;
-      cursor: pointer;
-    }
-    #chat-log {
-      padding: 1em;
-      background-color: #111111;
-      border-radius: 4px;
-      min-height: 200px;
-      font-size: 1.2em;
-      overflow-y: scroll;
-    }
-    .bot-message {
-      margin-bottom: 1em;
-      color: #00ff00;
-    }
-    #cost-section {
-      background-color: #111111;
-      color: #001aff;
-      border-radius: 4px;
-      padding: 1em;
-      margin-bottom: 1em;
-    }
-    #cost-section h2 {
-      margin-top: 0;
-      font-size: 1.2em;
-    }
-    #cost-section p {
-      margin-top: 0.5em;
-      margin-bottom: 0;
-      font-size: 1.5em;
-    }
-  </style>
+    <style>
+      body {
+            font-family: Arial, sans-serif;
+        background-color: #333333;
+        color: #ffae00;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      h1 {
+            font-size: 2em;
+        margin-bottom: 0.5em;
+      }
+      form {
+            display: flex;
+        flex-direction: row;
+        margin-bottom: 1em;
+      }
+      textarea {
+            flex-grow: 1;
+        padding: 0.5em;
+        font-size: 1.2em;
+        border-radius: 4px;
+        border: none;
+        box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+        background-color: #111111;
+        color: #ff8000;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        resize: vertical;
+      }
+      button {
+            margin-left: 0.5em;
+        padding: 0.5em;
+        font-size: 1.2em;
+        border-radius: 4px;
+        border: none;
+        box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+      }
+      #chat-log {
+            padding: 1em;
+        background-color: #111111;
+        border-radius: 4px;
+        min-height: 200px;
+        font-size: 1.2em;
+        overflow-y: scroll;
+        width: 100%;
+      }
+      .bot-message {
+            margin-bottom: 1em;
+        color: #00ff00;
+      }
+      #cost-section {
+            background-color: #111111;
+        color: #001aff;
+        border-radius: 4px;
+        padding: 1em;
+        margin-bottom: 1em;
+        width: 100%;
+      }
+      #cost-section h2 {
+            margin-top: 0;
+        font-size: 1.2em;
+      }
+      #cost-section p {
+            margin-top: 0.5em;
+        margin-bottom: 0;
+        font-size: 1.5em;
+      }
+    </style>
   </head>
   <body>
+    <div style="max-width: 800px; width: 100%;">
       <h1>Chat with GPT-4</h1>
       <div id="cost-section">
         <h2>Conversation Cost</h2>
         <p id="cost"></p>
       </div>
-    <form id="chat-form">
-      <textarea id="user-input" name="content" placeholder="Type your message here... (Press Ctrl+Enter to submit)"></textarea>
-      <button type="submit">Submit</button>
-      <button type="button" id="reset-button">Reset conversation</button>
-    </form>
-    <div id="chat-log"></div>
+      <form id="chat-form">
+        <textarea id="user-input" name="content" placeholder="Type your message here... (Press Ctrl+Enter to submit)"></textarea>
+        <button type="submit">Submit</button>
+        <button type="button" id="reset-button">Reset conversation</button>
+      </form>
+      <div id="chat-log"></div>
+    </div>
     <script>
       const form = document.getElementById('chat-form');
       const userInput = document.getElementById('user-input');
       const chatLog = document.getElementById('chat-log');
       const resetButton = document.getElementById('reset-button');
       const costElement = document.getElementById('cost');
+      
       function updateCost(cost) {
-        costElement.innerText = 'Total cost incurred so far: $' + cost;
+            costElement.innerText = 'Total cost incurred so far: $' + cost;
       }
-
       form.addEventListener('submit', (event) => {
-        event.preventDefault();
+            event.preventDefault();
         const content = userInput.value.trim();
-        if (content !== '') {
-          const xhr = new XMLHttpRequest();
+  sendMessageToBot(content);
+      });
+      userInput.addEventListener('keydown', (event) => {
+            if (event.keyCode === 13 && event.shiftKey) {
+              event.preventDefault();
+          userInput.value += '\n';
+        } else if (event.key === 'Enter' && event.ctrlKey) {
+                  event.preventDefault();
+          form.dispatchEvent(new Event('submit'));
+          } else if (event.keyCode === 13) {
+                  event.preventDefault();
+        }
+      });
+      resetButton.addEventListener('click', () => {
+            chatLog.innerHTML = '';
+        userInput.value = 'reset';
+  sendMessageToBot('reset');
+      });
+      function sendMessageToBot(content) {
+      if (content !== '') {
+              const xhr = new XMLHttpRequest();
           xhr.onreadystatechange = () => {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-              const response = JSON.parse(xhr.responseText).response;
-              const cost = JSON.parse(xhr.responseText).cost;
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                  const responseObj = JSON.parse(xhr.responseText);
+              const response = responseObj.response;
+              const cost = responseObj.cost;
               chatLog.innerHTML += '<p class="bot-message">Bot:<pre>' + response + '</pre></p>';
               chatLog.scrollTop = chatLog.scrollHeight;
               updateCost(cost);
-              userInput.value = '';
             }
           };
           xhr.open('POST', '/chat', true);
@@ -114,47 +143,8 @@
           chatLog.innerHTML += '<p>' + 'You: ' + content.replace(/\n/g, '<br>') + '</p>';
           chatLog.scrollTop = chatLog.scrollHeight;
           userInput.value = '';
-        }
-      });
-
-      userInput.addEventListener('keydown', (event) => {
-        if (event.keyCode === 13 && event.shiftKey) {
-          event.preventDefault();
-          userInput.value += '\n';
-        } else if (event.key === 'Enter' && event.ctrlKey) {
-              event.preventDefault();
-          form.dispatchEvent(new Event('submit'));
-          } else if (event.keyCode === 13) {
-              event.preventDefault();
-        }
-      });
-
-      form.addEventListener('submit', (event) => {
-        event.preventDefault();
-        const content = userInput.value.trim();
-        if (content !== '') {
-          const xhr = new XMLHttpRequest();
-          xhr.onreadystatechange = () => {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-              const response = JSON.parse(xhr.responseText).response;
-            chatLog.innerHTML += '<p class="bot-message">Bot:<pre>' + response + '</pre></p>';
-            chatLog.scrollTop = chatLog.scrollHeight;
-            userInput.value = '';
-          }
-        };
-          xhr.open('POST', '/chat', true);
-          xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-          xhr.send('content=' + encodeURIComponent(content));
-          chatLog.innerHTML += '<p>' + 'You: ' + content.replace(/\n/g, '<br>') + '</p>';
-          chatLog.scrollTop = chatLog.scrollHeight;
-          userInput.value = '';
-        }
-      });
-
-      resetButton.addEventListener('click', () => {
-        chatLog.innerHTML = '';
-        userInput.value = 'reset';
-      });
+       }
+      }
     </script>
   </body>
 </html>
