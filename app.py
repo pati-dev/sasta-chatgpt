@@ -17,6 +17,7 @@ This script prompts the user for a question on the terminal and hits openai API 
 """
 
 import os
+from math import ceil
 import openai
 import logging
 from flask import Flask, request, jsonify, render_template
@@ -29,20 +30,28 @@ MODEL_ID = 'gpt-4'
 
 app = Flask(__name__)
 conversation = []
+cost = 0
 
 
 def chatgpt_convo(conversation):
+    global cost
     response = openai.ChatCompletion.create(
         model=MODEL_ID,
         messages=conversation
     )
+    cost += ceil(response['usage']['prompt_tokens'] / 1000) * 0.03 + \
+        ceil(response['usage']['completion_tokens'] / 1000) * 0.06
+    content = response['choices'][0]['message']['content']
     conversation.append(
         {
             "role": "assistant",
-            "content": response['choices'][0]['message']['content']
+            "content": content
         }
     )
-    return conversation
+    return {
+        "conversation": conversation,
+        "cost": cost
+    }
 
 
 @app.route('/')
@@ -52,6 +61,7 @@ def home():
 
 @app.route('/chat', methods=['POST'])
 def chat():
+    global cost
     if "OPENAI_API_KEY" in os.environ:
         API_KEY = os.environ["OPENAI_API_KEY"]
     else:
@@ -64,14 +74,21 @@ def chat():
     if content.lower() == 'reset':
         global conversation
         conversation = []
-        return jsonify({'response': "Conversation reset."})
+        cost = 0
+        return jsonify({
+            'response': "Conversation reset.",
+            'cost': cost
+        })
     else:
         conversation.append({
             'role': 'user',
             'content': content
         })
-        response = chatgpt_convo(conversation)[-1]['content']
-        return jsonify({'response': response})
+        response = chatgpt_convo(conversation)['conversation'][-1]['content']
+        return jsonify({
+            'response': response,
+            'cost': cost
+        })
 
 
 def main():
