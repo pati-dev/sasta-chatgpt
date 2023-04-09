@@ -53,10 +53,30 @@
                 margin-bottom: 1em;
             color: #00ff00;
       }
+      #cost-section {
+        background-color: #111111;
+        color: #001aff;
+        border-radius: 4px;
+        padding: 1em;
+        margin-bottom: 1em;
+      }
+      #cost-section h2 {
+        margin-top: 0;
+        font-size: 1.2em;
+      }
+      #cost-section p {
+        margin-top: 0.5em;
+        margin-bottom: 0;
+        font-size: 1.5em;
+      }
     </style>
   </head>
   <body>
-        <h1>Chat with GPT-4</h1>
+      <h1>Chat with GPT-4</h1>
+      <div id="cost-section">
+        <h2>Conversation Cost</h2>
+        <p id="cost"></p>
+      </div>
     <form id="chat-form">
           <textarea id="user-input" name="content" placeholder="Type your message here... (Press Ctrl+Enter to submit)"></textarea>
       <button type="submit">Submit</button>
@@ -68,6 +88,35 @@
       const userInput = document.getElementById('user-input');
       const chatLog = document.getElementById('chat-log');
       const resetButton = document.getElementById('reset-button');
+      const costElement = document.getElementById('cost');
+      function updateCost(cost) {
+        costElement.innerText = 'Total cost incurred so far: $' + cost;
+      }
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const content = userInput.value.trim();
+        if (content !== '') {
+          const xhr = new XMLHttpRequest();
+          xhr.onreadystatechange = () => {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+              const response = JSON.parse(xhr.responseText).response;
+              const cost = JSON.parse(xhr.responseText).cost;
+              chatLog.innerHTML += '<p class="bot-message">Bot:<pre>' + response + '</pre></p>';
+              chatLog.scrollTop = chatLog.scrollHeight;
+              updateCost(cost);
+              userInput.value = '';
+            }
+          };
+          xhr.open('POST', '/chat', true);
+          xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+          xhr.send('content=' + encodeURIComponent(content));
+          chatLog.innerHTML += '<p>' + 'You: ' + content.replace(/\n/g, '<br>') + '</p>';
+          chatLog.scrollTop = chatLog.scrollHeight;
+          userInput.value = '';
+        }
+      });
+
       userInput.addEventListener('keydown', (event) => {
             if (event.keyCode === 13 && event.shiftKey) {
               event.preventDefault();
