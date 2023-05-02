@@ -28,18 +28,16 @@ logging.basicConfig(level=logging.WARN)
 # Hard-code which model to use
 MODEL_ID = 'gpt-4'
 
-conversation = []
-cost = 0
-
 
 def add_message(message_type, content):
-    global conversation  # Indicate that the global variable 'conversation' is used
+    conversation = st.session_state.get("conversation", [])
     conversation.append({"role": message_type, "content": content})
+    st.session_state.conversation = conversation
 
+def chatgpt_convo():
+    conversation = st.session_state.get("conversation", [])
+    cost = st.session_state.get("cost", 0)
 
-@st.cache_data
-def chatgpt_convo(conversation):
-    global cost
     response = openai.ChatCompletion.create(
         model=MODEL_ID,
         messages=conversation
@@ -53,14 +51,16 @@ def chatgpt_convo(conversation):
             "content": content
         }
     )
+
+    st.session_state.conversation = conversation
+    st.session_state.cost = cost
+
     return {
         "conversation": conversation,
         "cost": cost
     }
 
-
 def main():
-    global conversation, cost
     st.set_page_config(page_title="Chat with OpenAI GPT", page_icon=":speech_balloon:")
 
     st.title("Chat with OpenAI GPT")
@@ -74,6 +74,10 @@ def main():
 
     openai.api_key = API_KEY
 
+    if "conversation" not in st.session_state:
+        st.session_state.conversation = []
+        st.session_state.cost = 0
+
     input_placeholder = "Type your message here (press Shift+Enter for a newline)"
     content = st.text_input("You:", value='', key='input', help=input_placeholder, max_chars=None, type='default')
 
@@ -81,29 +85,26 @@ def main():
         if st.button("Send"):
             content_lines = content.split('\n')
             for line in content_lines:
-                conversation.append({
-                    'role': 'user',
-                    'content': line
-                })
-                response = chatgpt_convo(conversation)['conversation'][-1]['content']
+                add_message('user', line)
+                response = chatgpt_convo()['conversation'][-1]['content']
                 st.write("OpenAI GPT:", response, unsafe_allow_html=True)
             st.write("")
         elif st.button("Reset"):
-            conversation = []
-            cost = 0
+            st.session_state.conversation = []
+            st.session_state.cost = 0
             st.write("Conversation reset.")
             st.write("")
     else:
         st.stop()
 
     st.write("Conversation history:")
-    for i, item in enumerate(conversation):
+    for i, item in enumerate(st.session_state.conversation):
         if item['role'] == 'user':
             st.write(f"{i + 1}. You: {item['content']}")
         elif item['role'] == 'assistant':
             st.write(f"{i + 1}. OpenAI GPT: {item['content']}", unsafe_allow_html=True)
 
-    st.write("Cost: ${:.2f}".format(cost))
+    st.write("Cost: ${:.2f}".format(st.session_state.cost))
 
 
 if __name__ == '__main__':
