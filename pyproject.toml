@@ -9,7 +9,7 @@ license = "MIT"
 python = "^3.10"
 openai = "^0.27.2"
 pydantic = "^1.10.7"
-flask = "^2.2.3"
+streamlit = "^1.21.0"
 
 [build-system]
 requires = ["poetry-core"]

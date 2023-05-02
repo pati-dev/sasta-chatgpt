@@ -20,7 +20,7 @@ import os
 from math import ceil
 import openai
 import logging
-from flask import Flask, request, jsonify, render_template
+import streamlit as st
 
 logger = logging.getLogger()
 logging.basicConfig(level=logging.WARN)
@@ -28,11 +28,16 @@ logging.basicConfig(level=logging.WARN)
 # Hard-code which model to use
 MODEL_ID = 'gpt-4'
 
-app = Flask(__name__)
 conversation = []
 cost = 0
 
 
+def add_message(message_type, content):
+    global conversation  # Indicate that the global variable 'conversation' is used
+    conversation.append({"role": message_type, "content": content})
+
+
+@st.cache_data
 def chatgpt_convo(conversation):
     global cost
     response = openai.ChatCompletion.create(
@@ -54,46 +59,51 @@ def chatgpt_convo(conversation):
     }
 
 
-@app.route('/')
-def home():
-    return render_template('index.html')
+def main():
+    global conversation, cost
+    st.set_page_config(page_title="Chat with OpenAI GPT", page_icon=":speech_balloon:")
 
+    st.title("Chat with OpenAI GPT")
 
-@app.route('/chat', methods=['POST'])
-def chat():
-    global cost
     if "OPENAI_API_KEY" in os.environ:
         API_KEY = os.environ["OPENAI_API_KEY"]
     else:
-        # Ask user for input
-        API_KEY = input("Please enter the value for OPENAI_API_KEY: ")
+        # Read it from local
+        with open('.key', 'r') as f:
+            API_KEY = f.read()
 
     openai.api_key = API_KEY
 
-    content = request.form['content']
-    if content.lower() == 'reset':
-        global conversation
-        conversation = []
-        cost = 0
-        return jsonify({
-            'response': "Conversation reset.",
-            'cost': cost
-        })
+    input_placeholder = "Type your message here (press Shift+Enter for a newline)"
+    content = st.text_input("You:", value='', key='input', help=input_placeholder, max_chars=None, type='default')
+
+    if content:
+        if st.button("Send"):
+            content_lines = content.split('\n')
+            for line in content_lines:
+                conversation.append({
+                    'role': 'user',
+                    'content': line
+                })
+                response = chatgpt_convo(conversation)['conversation'][-1]['content']
+                st.write("OpenAI GPT:", response, unsafe_allow_html=True)
+            st.write("")
+        elif st.button("Reset"):
+            conversation = []
+            cost = 0
+            st.write("Conversation reset.")
+            st.write("")
     else:
-        conversation.append({
-            'role': 'user',
-            'content': content
-        })
-        response = chatgpt_convo(conversation)['conversation'][-1]['content']
-        return jsonify({
-            'response': response,
-            'cost': cost
-        })
+        st.stop()
 
+    st.write("Conversation history:")
+    for i, item in enumerate(conversation):
+        if item['role'] == 'user':
+            st.write(f"{i + 1}. You: {item['content']}")
+        elif item['role'] == 'assistant':
+            st.write(f"{i + 1}. OpenAI GPT: {item['content']}", unsafe_allow_html=True)
 
-def main():
-    logger.info("Session started")
-    app.run(port=5000, debug=True, host='0.0.0.0')
+    st.write("Cost: ${:.2f}".format(cost))
 
 
 if __name__ == '__main__':
