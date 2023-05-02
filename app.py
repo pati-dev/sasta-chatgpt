@@ -79,31 +79,31 @@ def main():
         st.session_state.cost = 0
 
     input_placeholder = "Type your message here (press Shift+Enter for a newline)"
-    content = st.text_input("You:", value='', key='input', help=input_placeholder, max_chars=None, type='default')
+    with st.form(key='input-form'):
+        content = st.text_area("You:", value='', key='input', help=input_placeholder)
 
-    if content:
-        if st.button("Send"):
-            content_lines = content.split('\n')
-            for line in content_lines:
-                add_message('user', line)
-                response = chatgpt_convo()['conversation'][-1]['content']
-                st.write("OpenAI GPT:", response, unsafe_allow_html=True)
+        if st.form_submit_button(label='Send'):
+            add_message('user', content)
+            response = chatgpt_convo()['conversation'][-1]['content']
+            st.write("OpenAI GPT:", response, unsafe_allow_html=True)
             st.write("")
-        elif st.button("Reset"):
+        elif st.form_submit_button(label='Reset'):
             st.session_state.conversation = []
             st.session_state.cost = 0
             st.write("Conversation reset.")
             st.write("")
-    else:
+
+    if not content:
         st.stop()
 
-    st.write("Conversation history:")
-    for i, item in enumerate(st.session_state.conversation):
+    st.write("Chat History:")
+    for item in st.session_state.conversation:
         if item['role'] == 'user':
-            st.write(f"{i + 1}. You: {item['content']}")
+            st.write("You: " + item['content'])
         elif item['role'] == 'assistant':
-            st.write(f"{i + 1}. OpenAI GPT: {item['content']}", unsafe_allow_html=True)
+            st.write("OpenAI GPT: " + item['content'], unsafe_allow_html=True)
 
+    st.write("")
     st.write("Cost: ${:.2f}".format(st.session_state.cost))
 
 
